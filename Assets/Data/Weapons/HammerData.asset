@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6267bc5526f18e40b28f81d50b08d7e, type: 3}
+  m_Name: HammerData
+  m_EditorClassIdentifier: 
+  weaponName: Hammer
+  icon: {fileID: 0}
+  weaponType: 1
+  secondaryAbility: 2
+  damage: 45
+  attackCooldown: 0.7
+  attackDuration: 0.35
+  attackRange: 2
+  knockbackForce: 10
+  swingAngle: 80
+  secondaryDamageMultiplier: 1.5
+  secondaryCooldown: 6
+  secondaryRange: 4
+  secondaryDuration: 1
+  coneAngle: 90
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 25
+  projectileCount: 1
+  projectileSpread: 0
+  projectileLifetime: 5
+  projectilePierces: 0
+  projectileReturns: 0
+  dashSpeed: 30
+  dashDistance: 8
+  dashDuration: 0.25
+  buffDuration: 5
+  buffDamageMultiplier: 1
+  buffAttackSpeedMultiplier: 1
+  buffDamageReduction: 0
+  stunDuration: 1.25
+  slowAmount: 0
+  slowDuration: 0
+  spinRadius: 3
+  spinDuration: 2
+  healPercent: 0
+  riftRadius: 5
+  riftDuration: 5
+  orbitingGlaiveCount: 3
+  orbitingGlaiveDuration: 20
+  orbitingGlaiveRadius: 2
+  orbitingGlaiveDamage: 15
+  teleportRange: 15
+  teleportExecuteCount: 3

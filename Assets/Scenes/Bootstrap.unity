@@ -152,7 +152,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06398eb0e369da8419d56802d8264fd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Level: 0
+  stats:
+    walkSpeed: 8
+    sprintSpeed: 14
+    groundAcceleration: 60
+    groundFriction: 12
+    jumpForce: 8
+    maxAirJumps: 1
+    maxStaminaPills: 3
+    staminaRegenTime: 2
+    sprintStaminaDrainTime: 3
+    jumpStaminaCost: 0
+    airJumpStaminaCost: 1
+    wallJumpStaminaCost: 1
+    slideStaminaCost: 1
+    slideMinSpeed: 18
+    slideBoost: 5
+    slideFriction: 3
+    slideMaxSpeed: 40
+    slideSteering: 40
+    slopeSlideAccel: 30
+    slideJumpBoostMultiplier: 2.5
+    wallJumpUpForce: 7
+    wallJumpAwayForce: 10
+    wallCheckDistance: 1.2
+    wallJumpCooldown: 0.2
+    wallJumpMinVelocity: 3
+    crouchScaleY: 0.5
+    crouchSpeed: 4
+    airAcceleration: 18
+    airMaxSpeed: 16
+    coyoteTime: 0.12
+    jumpCooldown: 0.1
+  allWeapons: []
+  weaponPrefabs: []
+  allRelics: []
+  allClasses: []
+  totalLevelCount: 5
 --- !u!4 &794165852
 Transform:
   m_ObjectHideFlags: 0

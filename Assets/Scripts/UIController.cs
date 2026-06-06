@@ -1,24 +1,28 @@
 using UnityEngine;
 using TMPro;
-using System;
 
 public class UIController : MonoBehaviour
 {
     [SerializeField] private PlayerController playerController;
-    private TextMeshProUGUI textMeshProUGUI;
+    [SerializeField] private HealthComponent playerHealth;
+    private TextMeshProUGUI staminaText;
 
-    // Start is called before the first frame update
     void Start()
     {
-        textMeshProUGUI = GetComponent<TextMeshProUGUI>();
+        staminaText = GetComponent<TextMeshProUGUI>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        string tmp = "";
-        for (int i = 1; i <= Math.Floor(playerController.currentStamina); i++)
-            tmp += '=';
-        textMeshProUGUI.text = tmp;
+        if (playerController == null) return;
+
+        int pills = playerController.CurrentStaminaPills;
+        int maxPills = playerController.MaxStaminaPills;
+
+        string display = "";
+        for (int i = 0; i < maxPills; i++)
+            display += i < pills ? "=" : "-";
+
+        staminaText.text = display + $" player: {playerHealth.CurrentHealth}";
     }
 }
