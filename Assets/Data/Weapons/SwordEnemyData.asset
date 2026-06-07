@@ -13,10 +13,46 @@ MonoBehaviour:
   m_Name: SwordEnemyData
   m_EditorClassIdentifier: 
   weaponName: SwordEnemy
+  prefab: {fileID: 8266875839894259500, guid: b0dfc488fc9b4ee44a5e4f105bc46743, type: 3}
   icon: {fileID: 0}
+  weaponType: 0
+  secondaryAbility: 0
   damage: 30
   attackCooldown: 0.45
   attackDuration: 0.25
   attackRange: 2
   knockbackForce: 7
   swingAngle: 100
+  secondaryDamageMultiplier: 1
+  secondaryCooldown: 5
+  secondaryRange: 3
+  secondaryDuration: 1
+  coneAngle: 60
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 25
+  projectileCount: 1
+  projectileSpread: 0
+  projectileLifetime: 5
+  projectilePierces: 0
+  projectileReturns: 0
+  dashSpeed: 30
+  dashDistance: 8
+  dashDuration: 0.25
+  buffDuration: 5
+  buffDamageMultiplier: 1
+  buffAttackSpeedMultiplier: 1
+  buffDamageReduction: 0
+  stunDuration: 0
+  slowAmount: 0
+  slowDuration: 0
+  spinRadius: 3
+  spinDuration: 2
+  healPercent: 0
+  riftRadius: 5
+  riftDuration: 5
+  orbitingGlaiveCount: 3
+  orbitingGlaiveDuration: 20
+  orbitingGlaiveRadius: 2
+  orbitingGlaiveDamage: 15
+  teleportRange: 15
+  teleportExecuteCount: 3

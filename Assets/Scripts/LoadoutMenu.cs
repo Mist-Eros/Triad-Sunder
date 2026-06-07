@@ -20,29 +20,20 @@ public class LoadoutMenu : MonoBehaviour
 
     private bool isRefreshing;
 
-    // Colours for equipped / unequipped toggle backgrounds
-    private static readonly Color EquippedColor = new Color(0.2f, 0.5f, 0.2f, 1f);
+    private static readonly Color EquippedColor   = new Color(0.2f, 0.5f, 0.2f, 1f);
     private static readonly Color UnequippedColor = new Color(0.25f, 0.25f, 0.25f, 1f);
 
-    void OnEnable()
-    {
-        Populate();
-    }
+    void OnEnable()  => Populate();
+    void OnDisable() => ClearEntries();
 
-    void OnDisable()
-    {
-        ClearEntries();
-    }
+    // ============================================================
+    // POPULATE
+    // ============================================================
 
     public void Populate()
     {
         ClearEntries();
-
-        if (GameManager.Instance == null)
-        {
-            Debug.LogWarning("[LoadoutMenu] GameManager not found.");
-            return;
-        }
+        if (GameManager.Instance == null) return;
 
         PopulateWeapons();
         PopulateRelics();
@@ -55,97 +46,54 @@ public class LoadoutMenu : MonoBehaviour
     void PopulateWeapons()
     {
         var unlockedWeapons = GameManager.Instance.GetAvailableWeapons();
-        string equipped0 = GameManager.Instance.Save.equippedWeapon0;
-        string equipped1 = GameManager.Instance.Save.equippedWeapon1;
+        string eq0 = GameManager.Instance.Save.equippedWeapon0;
+        string eq1 = GameManager.Instance.Save.equippedWeapon1;
 
         foreach (var wpn in unlockedWeapons)
         {
             if (wpn == null) continue;
 
-            GameObject entry = Instantiate(weaponTogglePrefab, weaponContentContainer);
-            entry.SetActive(true);
-            entry.name = $"Weapon_{wpn.weaponName}";
-
-            var label = entry.GetComponentInChildren<TextMeshProUGUI>();
-            if (label != null)
-                label.text = $"{wpn.weaponName}\n<size=80%>{wpn.weaponType}</size>";
-
-            // Tint background based on equipped state
-            bool isEquipped = wpn.weaponName == equipped0 || wpn.weaponName == equipped1;
-            var bg = entry.GetComponent<Image>();
-            if (bg != null)
-                bg.color = isEquipped ? EquippedColor : UnequippedColor;
+            bool isEquipped = wpn.weaponName == eq0 || wpn.weaponName == eq1;
+            GameObject entry = CreateEntry(weaponTogglePrefab, weaponContentContainer,
+                $"Weapon_{wpn.weaponName}", $"{wpn.weaponName}\n<size=80%>{wpn.weaponType}</size>", isEquipped);
 
             var toggle = entry.GetComponent<Toggle>();
-            if (toggle != null)
-            {
-                toggle.isOn = isEquipped;
-                toggle.onValueChanged.AddListener((val) => OnWeaponToggled(wpn.weaponName, val));
-                weaponToggles.Add(toggle);
-                weaponNames.Add(wpn.weaponName);
-            }
+            toggle.onValueChanged.AddListener(val => OnWeaponToggled(wpn.weaponName, val));
+            weaponToggles.Add(toggle);
+            weaponNames.Add(wpn.weaponName);
         }
     }
 
     void OnWeaponToggled(string weaponName, bool isOn)
     {
         if (isRefreshing || GameManager.Instance == null) return;
+        var save = GameManager.Instance.Save;
 
         if (isOn)
         {
-            // Already equipped — nothing to do
-            if (GameManager.Instance.Save.equippedWeapon0 == weaponName ||
-                GameManager.Instance.Save.equippedWeapon1 == weaponName)
-                return;
+            if (save.equippedWeapon0 == weaponName || save.equippedWeapon1 == weaponName) return;
 
-            // Find free slot
-            if (string.IsNullOrEmpty(GameManager.Instance.Save.equippedWeapon0))
+            if (string.IsNullOrEmpty(save.equippedWeapon0))
                 GameManager.Instance.EquipWeapon(0, weaponName);
-            else if (string.IsNullOrEmpty(GameManager.Instance.Save.equippedWeapon1))
+            else if (string.IsNullOrEmpty(save.equippedWeapon1))
                 GameManager.Instance.EquipWeapon(1, weaponName);
             else
             {
-                // Both slots full — unequip slot 0, equip new there
                 GameManager.Instance.UnequipWeapon(0);
                 GameManager.Instance.EquipWeapon(0, weaponName);
             }
         }
         else
         {
-            // Unequip from whichever slot holds this weapon
-            if (GameManager.Instance.Save.equippedWeapon0 == weaponName)
+            if (save.equippedWeapon0 == weaponName)
                 GameManager.Instance.UnequipWeapon(0);
-            else if (GameManager.Instance.Save.equippedWeapon1 == weaponName)
+            else if (save.equippedWeapon1 == weaponName)
                 GameManager.Instance.UnequipWeapon(1);
         }
 
-        // Sync all toggle visuals
-        RefreshWeaponToggles();
-    }
-
-    void RefreshWeaponToggles()
-    {
-        isRefreshing = true;
-
-        string eq0 = GameManager.Instance.Save.equippedWeapon0;
-        string eq1 = GameManager.Instance.Save.equippedWeapon1;
-
-        for (int i = 0; i < weaponToggles.Count && i < weaponNames.Count; i++)
-        {
-            if (weaponToggles[i] == null) continue;
-
-            bool equipped = weaponNames[i] == eq0 || weaponNames[i] == eq1;
-
-            // Update toggle without firing callbacks
-            weaponToggles[i].SetIsOnWithoutNotify(equipped);
-
-            // Update background colour
-            var bg = weaponToggles[i].GetComponent<Image>();
-            if (bg != null)
-                bg.color = equipped ? EquippedColor : UnequippedColor;
-        }
-
-        isRefreshing = false;
+        RefreshToggles(weaponToggles, weaponNames, name =>
+            GameManager.Instance.Save.equippedWeapon0 == name
+            || GameManager.Instance.Save.equippedWeapon1 == name);
     }
 
     // ============================================================
@@ -161,32 +109,68 @@ public class LoadoutMenu : MonoBehaviour
         {
             if (relic == null) continue;
 
-            GameObject entry = Instantiate(relicTogglePrefab, relicContentContainer);
-            entry.SetActive(true);
-            entry.name = $"Relic_{relic.relicName}";
-
-            // Build compact tooltip
             string effects = BuildRelicEffectsString(relic);
-
-            var label = entry.GetComponentInChildren<TextMeshProUGUI>();
-            if (label != null)
-                label.text = $"{relic.relicName}\n<size=65%>{effects}</size>";
-
             bool isEquipped = equippedRelics.Contains(relic.relicName);
 
-            var bg = entry.GetComponent<Image>();
-            if (bg != null)
-                bg.color = isEquipped ? EquippedColor : UnequippedColor;
+            GameObject entry = CreateEntry(relicTogglePrefab, relicContentContainer,
+                $"Relic_{relic.relicName}", $"{relic.relicName}\n<size=65%>{effects}</size>", isEquipped);
 
             var toggle = entry.GetComponent<Toggle>();
-            if (toggle != null)
-            {
-                toggle.isOn = isEquipped;
-                toggle.onValueChanged.AddListener((val) => OnRelicToggled(relic.relicName, val));
-                relicToggles.Add(toggle);
-                relicNames.Add(relic.relicName);
-            }
+            toggle.onValueChanged.AddListener(val => OnRelicToggled(relic.relicName, val));
+            relicToggles.Add(toggle);
+            relicNames.Add(relic.relicName);
         }
+    }
+
+    void OnRelicToggled(string relicName, bool isOn)
+    {
+        if (isRefreshing || GameManager.Instance == null) return;
+
+        if (isOn)
+            GameManager.Instance.EquipRelic(relicName);
+        else
+            GameManager.Instance.UnequipRelic(relicName);
+
+        RefreshToggles(relicToggles, relicNames,
+            name => GameManager.Instance.Save.equippedRelics.Contains(name));
+    }
+
+    // ============================================================
+    // SHARED HELPERS
+    // ============================================================
+
+    GameObject CreateEntry(GameObject prefab, Transform parent,
+        string entryName, string labelText, bool isEquipped)
+    {
+        GameObject entry = Instantiate(prefab, parent);
+        entry.SetActive(true);
+        entry.name = entryName;
+
+        var label = entry.GetComponentInChildren<TextMeshProUGUI>();
+        if (label != null) label.text = labelText;
+
+        var bg = entry.GetComponent<Image>();
+        if (bg != null) bg.color = isEquipped ? EquippedColor : UnequippedColor;
+
+        var toggle = entry.GetComponent<Toggle>();
+        if (toggle != null) toggle.isOn = isEquipped;
+
+        return entry;
+    }
+
+    void RefreshToggles(List<Toggle> toggles, List<string> names,
+        System.Func<string, bool> isEquipped)
+    {
+        isRefreshing = true;
+        for (int i = 0; i < toggles.Count && i < names.Count; i++)
+        {
+            if (toggles[i] == null) continue;
+            bool equipped = isEquipped(names[i]);
+            toggles[i].SetIsOnWithoutNotify(equipped);
+            var bg = toggles[i].GetComponent<Image>();
+            if (bg != null) bg.color = equipped ? EquippedColor : UnequippedColor;
+        }
+        isRefreshing = false;
     }
 
     string BuildRelicEffectsString(RelicData relic)
@@ -209,40 +193,6 @@ public class LoadoutMenu : MonoBehaviour
             parts.Add($"STA x{relic.staminaRegenMultiplier:F1}");
 
         return parts.Count > 0 ? string.Join("  ", parts) : "No effects";
-    }
-
-    void OnRelicToggled(string relicName, bool isOn)
-    {
-        if (isRefreshing || GameManager.Instance == null) return;
-
-        if (isOn)
-            GameManager.Instance.EquipRelic(relicName);
-        else
-            GameManager.Instance.UnequipRelic(relicName);
-
-        RefreshRelicToggles();
-    }
-
-    void RefreshRelicToggles()
-    {
-        isRefreshing = true;
-
-        var equippedRelics = GameManager.Instance.Save.equippedRelics;
-
-        for (int i = 0; i < relicToggles.Count && i < relicNames.Count; i++)
-        {
-            if (relicToggles[i] == null) continue;
-
-            bool equipped = equippedRelics.Contains(relicNames[i]);
-
-            relicToggles[i].SetIsOnWithoutNotify(equipped);
-
-            var bg = relicToggles[i].GetComponent<Image>();
-            if (bg != null)
-                bg.color = equipped ? EquippedColor : UnequippedColor;
-        }
-
-        isRefreshing = false;
     }
 
     // ============================================================

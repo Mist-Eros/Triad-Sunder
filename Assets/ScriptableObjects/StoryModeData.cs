@@ -1,13 +1,17 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewClass", menuName = "Game/Class Data")]
-public class ClassData : ScriptableObject
+[CreateAssetMenu(fileName = "NewStoryMode", menuName = "Game/Story Mode Data")]
+public class StoryModeData : ScriptableObject
 {
     [Header("Identity")]
-    public string className = "Unnamed";
+    public StoryMode mode = StoryMode.Light;
+    public string displayName = "Light";
     public Sprite icon;
     [TextArea(2, 5)]
     public string description;
+
+    [Header("Default Weapons")]
+    public string[] defaultWeapons = { "Axe", "Hammer" };
 
     [Header("Base Stats")]
     public float maxHealth = 100f;

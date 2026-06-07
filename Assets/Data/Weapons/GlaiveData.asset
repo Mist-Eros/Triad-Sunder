@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: GlaiveData
   m_EditorClassIdentifier: 
   weaponName: Glaive
+  prefab: {fileID: 6560365079520737103, guid: d43b236bd0065d941bccf79864df11c0, type: 3}
   icon: {fileID: 0}
   weaponType: 5
   secondaryAbility: 4

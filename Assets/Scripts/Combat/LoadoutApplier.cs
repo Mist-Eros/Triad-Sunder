@@ -23,7 +23,7 @@ public class LoadoutApplier : MonoBehaviour
         }
 
         ApplyWeapons();
-        ApplyClassStats();
+        ApplyStoryModeStats();
         ApplyRelicStats();
         ApplyHealth();
         HookPlayerDeath();
@@ -89,19 +89,18 @@ public class LoadoutApplier : MonoBehaviour
         combatController.SetWeapons(weapons, 0);
     }
 
-    void ApplyClassStats()
+    void ApplyStoryModeStats()
     {
-        ClassData cls = GameManager.Instance.GetEquippedClassData();
-        if (cls == null) return;
+        StoryModeData sm = GameManager.Instance.GetStoryModeData();
+        if (sm == null) return;
 
         PlayerStats stats = GameManager.Instance.Stats;
+        stats.walkSpeed *= sm.moveSpeedMultiplier;
+        stats.sprintSpeed *= sm.moveSpeedMultiplier;
+        stats.maxStaminaPills = sm.maxStaminaPills;
+        stats.staminaRegenTime = sm.staminaRegenTime;
 
-        stats.walkSpeed *= cls.moveSpeedMultiplier;
-        stats.sprintSpeed *= cls.moveSpeedMultiplier;
-        stats.maxStaminaPills = cls.maxStaminaPills;
-        stats.staminaRegenTime = cls.staminaRegenTime;
-
-        Debug.Log($"[LoadoutApplier] Applied class: {cls.className}");
+        Debug.Log($"[LoadoutApplier] Applied story mode: {sm.displayName}");
     }
 
     void ApplyRelicStats()

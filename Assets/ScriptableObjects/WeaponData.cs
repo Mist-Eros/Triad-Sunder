@@ -31,6 +31,7 @@ public class WeaponData : ScriptableObject
 {
     [Header("Identity")]
     public string weaponName = "Unnamed";
+    public GameObject prefab;
     public Sprite icon;
     public WeaponType weaponType = WeaponType.Melee;
     public SecondaryAbility secondaryAbility = SecondaryAbility.None;

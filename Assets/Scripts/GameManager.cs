@@ -68,14 +68,6 @@ public class GameManager : MonoBehaviour
     private const string SAVE_KEY = "roguelite_save";
 
     // Weapon defaults per story mode
-    private static readonly Dictionary<StoryMode, string[]> ModeWeapons = new Dictionary<StoryMode, string[]>
-    {
-        { StoryMode.Light,  new[] { "Axe", "Hammer" } },
-        { StoryMode.Dark,   new[] { "Sword", "Longbow" } },
-        { StoryMode.Chaos,  new[] { "Katana", "DualCrossbows" } },
-    };
-
-    // All 6 default weapons — always available
     private static readonly string[] DefaultWeapons = { "Axe", "Hammer", "Sword", "Longbow", "Katana", "DualCrossbows" };
 
     [Header("Player Stats")]
@@ -83,13 +75,12 @@ public class GameManager : MonoBehaviour
 
     [Header("Weapon Registry")]
     [SerializeField] private List<WeaponData> allWeapons = new List<WeaponData>();
-    [SerializeField] private List<GameObject> weaponPrefabs = new List<GameObject>();
 
     [Header("Relic Registry")]
     [SerializeField] private List<RelicData> allRelics = new List<RelicData>();
 
-    [Header("Class Registry")]
-    [SerializeField] private List<ClassData> allClasses = new List<ClassData>();
+    [Header("Story Mode Registry")]
+    [SerializeField] private List<StoryModeData> allStoryModes = new List<StoryModeData>();
 
     [Header("Levels")]
     [SerializeField] private int totalLevelCount = 5;
@@ -102,9 +93,8 @@ public class GameManager : MonoBehaviour
 
     // Cached lookups
     private Dictionary<string, WeaponData> weaponDataLookup;
-    private Dictionary<string, GameObject> weaponPrefabLookup;
     private Dictionary<string, RelicData> relicLookup;
-    private Dictionary<string, ClassData> classLookup;
+    private Dictionary<StoryMode, StoryModeData> storyModeLookup;
 
     // Events
     public System.Action OnSaveChanged;
@@ -135,24 +125,27 @@ public class GameManager : MonoBehaviour
             if (w != null && !weaponDataLookup.ContainsKey(w.weaponName))
                 weaponDataLookup[w.weaponName] = w;
 
-        weaponPrefabLookup = new Dictionary<string, GameObject>();
-        foreach (var p in weaponPrefabs)
-            if (p != null)
-            {
-                WeaponBase wb = p.GetComponent<WeaponBase>();
-                if (wb?.Data != null && !weaponPrefabLookup.ContainsKey(wb.Data.weaponName))
-                    weaponPrefabLookup[wb.Data.weaponName] = p;
-            }
-
         relicLookup = new Dictionary<string, RelicData>();
         foreach (var r in allRelics)
             if (r != null && !relicLookup.ContainsKey(r.relicName))
                 relicLookup[r.relicName] = r;
 
-        classLookup = new Dictionary<string, ClassData>();
-        foreach (var c in allClasses)
-            if (c != null && !classLookup.ContainsKey(c.className))
-                classLookup[c.className] = c;
+        storyModeLookup = new Dictionary<StoryMode, StoryModeData>();
+        foreach (var s in allStoryModes)
+            if (s != null && !storyModeLookup.ContainsKey(s.mode))
+                storyModeLookup[s.mode] = s;
+    }
+
+    public StoryModeData GetStoryModeData()
+    {
+        storyModeLookup.TryGetValue(save.storyMode, out StoryModeData data);
+        return data;
+    }
+
+    string[] GetStoryModeDefaultWeapons()
+    {
+        StoryModeData data = GetStoryModeData();
+        return data?.defaultWeapons ?? new[] { "Axe", "Hammer" };
     }
 
     // ============================================================
@@ -168,16 +161,10 @@ public class GameManager : MonoBehaviour
 
     public void Load()
     {
-        string json = PlayerPrefs.GetString(SAVE_KEY, "");
+        string json = Application.isEditor ? "" : PlayerPrefs.GetString(SAVE_KEY, "");
         if (string.IsNullOrEmpty(json))
         {
             save = new SaveData();
-            // Default unlocks
-            save.unlockedLevels = new List<int> { 2 };
-            save.unlockedWeapons = new List<string>();
-            save.unlockedRelics = new List<string>();
-            save.unlockedClasses = new List<string>();
-            save.enemyHealthMultiplier = 1f;
 
             // Always unlock the 6 default weapons
             foreach (var name in DefaultWeapons)
@@ -194,16 +181,9 @@ public class GameManager : MonoBehaviour
             }
 
             // Auto-equip based on story mode
-            if (ModeWeapons.TryGetValue(save.storyMode, out string[] defaults) && defaults.Length >= 2)
-            {
-                save.equippedWeapon0 = defaults[0];
-                save.equippedWeapon1 = defaults[1];
-            }
-            else if (save.unlockedWeapons.Count >= 2)
-            {
-                save.equippedWeapon0 = save.unlockedWeapons[0];
-                save.equippedWeapon1 = save.unlockedWeapons[1];
-            }
+            string[] defaults = GetStoryModeDefaultWeapons();
+            save.equippedWeapon0 = defaults[0];
+            save.equippedWeapon1 = defaults[1];
 
             SaveGame();
         }
@@ -211,10 +191,10 @@ public class GameManager : MonoBehaviour
         {
             save = JsonUtility.FromJson<SaveData>(json) ?? new SaveData();
 
-            // Migration: remove invalid level indices (0=Bootstrap, 1=MainMenu are not levels)
-            save.unlockedLevels.RemoveAll(i => i < 2);
+            // Migration: remove invalid level indices
+            save.unlockedLevels.RemoveAll(i => i < 1);
             if (save.unlockedLevels.Count == 0)
-                save.unlockedLevels.Add(2);
+                save.unlockedLevels.Add(1);
 
             // Migration: ensure 6 default weapons are always unlocked
             foreach (var name in DefaultWeapons)
@@ -226,19 +206,17 @@ public class GameManager : MonoBehaviour
             // Migration: ensure equipped weapons are set for current mode
             if (string.IsNullOrEmpty(save.equippedWeapon0) || string.IsNullOrEmpty(save.equippedWeapon1))
             {
-                if (ModeWeapons.TryGetValue(save.storyMode, out string[] defaults) && defaults.Length >= 2)
-                {
-                    save.equippedWeapon0 = defaults[0];
-                    save.equippedWeapon1 = defaults[1];
-                }
+                string[] modeDefaults = GetStoryModeDefaultWeapons();
+                save.equippedWeapon0 = modeDefaults[0];
+                save.equippedWeapon1 = modeDefaults[1];
             }
 
             SaveGame();
         }
 
         Debug.Log($"[GameManager] Loaded save: {save.unlockedWeapons.Count} weapons, " +
-                  $"{save.unlockedRelics.Count} relics, {save.unlockedClasses.Count} classes, " +
-                  $"enemy HP x{save.enemyHealthMultiplier:F1}");
+                  $"{save.unlockedRelics.Count} relics, enemy HP x{save.enemyHealthMultiplier:F1}, " +
+                  $"story mode: {save.storyMode}");
     }
 
     public void ResetSave()
@@ -279,16 +257,6 @@ public class GameManager : MonoBehaviour
         if (!save.unlockedRelics.Contains(relicName))
         {
             save.unlockedRelics.Add(relicName);
-            SaveGame();
-            OnSaveChanged?.Invoke();
-        }
-    }
-
-    public void UnlockClass(string className)
-    {
-        if (!save.unlockedClasses.Contains(className))
-        {
-            save.unlockedClasses.Add(className);
             SaveGame();
             OnSaveChanged?.Invoke();
         }
@@ -340,22 +308,6 @@ public class GameManager : MonoBehaviour
         OnLoadoutChanged?.Invoke();
     }
 
-    public void EquipClass(string className)
-    {
-        if (!save.IsClassUnlocked(className)) return;
-
-        save.equippedClass = className;
-        SaveGame();
-        OnLoadoutChanged?.Invoke();
-    }
-
-    public void UnequipClass()
-    {
-        save.equippedClass = null;
-        SaveGame();
-        OnLoadoutChanged?.Invoke();
-    }
-
     // ============================================================
     // QUERIES
     // ============================================================
@@ -371,22 +323,13 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public List<WeaponData> GetAvailableWeapons()
     {
-        StoryMode mode = save.storyMode;
-
-        if (mode == StoryMode.Endless)
-        {
-            // All unlocked weapons
+        if (save.storyMode == StoryMode.Endless)
             return allWeapons.Where(w => w != null && save.IsWeaponUnlocked(w.weaponName)).ToList();
-        }
 
-        if (ModeWeapons.TryGetValue(mode, out string[] modeDefaults))
-        {
-            return allWeapons.Where(w => w != null
-                && modeDefaults.Contains(w.weaponName)
-                && save.IsWeaponUnlocked(w.weaponName)).ToList();
-        }
-
-        return allWeapons.Where(w => w != null && save.IsWeaponUnlocked(w.weaponName)).ToList();
+        string[] modeDefaults = GetStoryModeDefaultWeapons();
+        return allWeapons.Where(w => w != null
+            && modeDefaults.Contains(w.weaponName)
+            && save.IsWeaponUnlocked(w.weaponName)).ToList();
     }
 
     public List<RelicData> GetUnlockedRelics()
@@ -394,14 +337,8 @@ public class GameManager : MonoBehaviour
         return allRelics.Where(r => r != null && save.IsRelicUnlocked(r.relicName)).ToList();
     }
 
-    public List<ClassData> GetUnlockedClasses()
-    {
-        return allClasses.Where(c => c != null && save.IsClassUnlocked(c.className)).ToList();
-    }
-
     public List<WeaponData> GetAllWeapons() => allWeapons.Where(w => w != null).ToList();
     public List<RelicData> GetAllRelics() => allRelics.Where(r => r != null).ToList();
-    public List<ClassData> GetAllClasses() => allClasses.Where(c => c != null).ToList();
 
     public WeaponData GetEquippedWeaponData(int slot)
     {
@@ -413,10 +350,8 @@ public class GameManager : MonoBehaviour
 
     public GameObject GetEquippedWeaponPrefab(int slot)
     {
-        string name = slot == 0 ? save.equippedWeapon0 : save.equippedWeapon1;
-        if (string.IsNullOrEmpty(name)) return null;
-        weaponPrefabLookup.TryGetValue(name, out GameObject prefab);
-        return prefab;
+        WeaponData data = GetEquippedWeaponData(slot);
+        return data?.prefab;
     }
 
     public List<RelicData> GetEquippedRelicData()
@@ -427,24 +362,16 @@ public class GameManager : MonoBehaviour
             .ToList();
     }
 
-    public ClassData GetEquippedClassData()
-    {
-        if (string.IsNullOrEmpty(save.equippedClass)) return null;
-        classLookup.TryGetValue(save.equippedClass, out ClassData data);
-        return data;
-    }
-
     public List<int> GetUnlockedLevels() => new List<int>(save.unlockedLevels);
 
     // ============================================================
-    // STAT COMPUTATION (class + relics combined)
+    // STAT COMPUTATION (story mode + relics combined)
     // ============================================================
 
     public float GetEffectiveDamageMultiplier()
     {
-        float mult = 1f;
-        ClassData cls = GetEquippedClassData();
-        if (cls != null) mult *= cls.damageMultiplier;
+        StoryModeData sm = GetStoryModeData();
+        float mult = sm?.damageMultiplier ?? 1f;
         foreach (RelicData relic in GetEquippedRelicData())
             mult *= relic.damageMultiplier;
         return mult;
@@ -452,9 +379,8 @@ public class GameManager : MonoBehaviour
 
     public float GetEffectiveAttackSpeedMultiplier()
     {
-        float mult = 1f;
-        ClassData cls = GetEquippedClassData();
-        if (cls != null) mult *= cls.attackSpeedMultiplier;
+        StoryModeData sm = GetStoryModeData();
+        float mult = sm?.attackSpeedMultiplier ?? 1f;
         foreach (RelicData relic in GetEquippedRelicData())
             mult *= relic.attackSpeedMultiplier;
         return mult;
@@ -462,9 +388,8 @@ public class GameManager : MonoBehaviour
 
     public float GetEffectiveMoveSpeedMultiplier()
     {
-        float mult = 1f;
-        ClassData cls = GetEquippedClassData();
-        if (cls != null) mult *= cls.moveSpeedMultiplier;
+        StoryModeData sm = GetStoryModeData();
+        float mult = sm?.moveSpeedMultiplier ?? 1f;
         foreach (RelicData relic in GetEquippedRelicData())
             mult *= relic.moveSpeedMultiplier;
         return mult;
@@ -472,9 +397,8 @@ public class GameManager : MonoBehaviour
 
     public float GetEffectiveMaxHealth()
     {
-        float baseHP = 100f;
-        ClassData cls = GetEquippedClassData();
-        if (cls != null) baseHP = cls.maxHealth;
+        StoryModeData sm = GetStoryModeData();
+        float baseHP = sm?.maxHealth ?? 100f;
         float mult = 1f;
         foreach (RelicData relic in GetEquippedRelicData())
             mult *= relic.maxHealthMultiplier;
@@ -499,14 +423,14 @@ public class GameManager : MonoBehaviour
 
     public int GetEffectiveStaminaPills()
     {
-        ClassData cls = GetEquippedClassData();
-        return cls?.maxStaminaPills ?? stats.maxStaminaPills;
+        StoryModeData sm = GetStoryModeData();
+        return sm?.maxStaminaPills ?? 3;
     }
 
     public float GetEffectiveStaminaRegenTime()
     {
-        ClassData cls = GetEquippedClassData();
-        float baseVal = cls?.staminaRegenTime ?? stats.staminaRegenTime;
+        StoryModeData sm = GetStoryModeData();
+        float baseVal = sm?.staminaRegenTime ?? 2f;
         float mult = 1f;
         foreach (RelicData relic in GetEquippedRelicData())
             mult *= relic.staminaRegenMultiplier;

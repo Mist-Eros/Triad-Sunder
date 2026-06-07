@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: BowData
   m_EditorClassIdentifier: 
   weaponName: Bow
+  prefab: {fileID: 6988680502720454520, guid: 7adaa2ae9a7b5ab4fbc14498e3fc366e, type: 3}
   icon: {fileID: 0}
   weaponType: 2
   secondaryAbility: 5

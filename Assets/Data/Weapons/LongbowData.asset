@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: LongbowData
   m_EditorClassIdentifier: 
   weaponName: Longbow
+  prefab: {fileID: 6004455692001074958, guid: 69b38d83200d2a64c83fc6308091a169, type: 3}
   icon: {fileID: 0}
   weaponType: 3
   secondaryAbility: 6

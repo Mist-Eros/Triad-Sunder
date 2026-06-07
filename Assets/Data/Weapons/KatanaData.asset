@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: KatanaData
   m_EditorClassIdentifier: 
   weaponName: Katana
+  prefab: {fileID: 1687879189369533104, guid: 4d5a39db39b60014b9e1320288a0027c, type: 3}
   icon: {fileID: 0}
   weaponType: 6
   secondaryAbility: 10

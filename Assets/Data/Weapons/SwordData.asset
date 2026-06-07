@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: SwordData
   m_EditorClassIdentifier: 
   weaponName: Sword
+  prefab: {fileID: 8266875839894259500, guid: b0dfc488fc9b4ee44a5e4f105bc46743, type: 3}
   icon: {fileID: 0}
   weaponType: 0
   secondaryAbility: 8

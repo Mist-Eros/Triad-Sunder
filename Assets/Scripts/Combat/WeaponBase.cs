@@ -433,21 +433,11 @@ public class WeaponBase : MonoBehaviour
 
             health.TakeDamage(dmg, Vector3.up * data.knockbackForce * 0.5f);
 
-            // Apply stun
             if (stun && data.stunDuration > 0f)
-            {
-                StatusEffect se = health.GetComponent<StatusEffect>();
-                if (se == null) se = health.gameObject.AddComponent<StatusEffect>();
-                se.ApplyStun(data.stunDuration);
-            }
+                GetOrAddStatusEffect(health).ApplyStun(data.stunDuration);
 
-            // Apply initial slow from rift spawn
             if (spawnRift && data.slowDuration > 0f)
-            {
-                StatusEffect se = health.GetComponent<StatusEffect>();
-                if (se == null) se = health.gameObject.AddComponent<StatusEffect>();
-                se.ApplySlow(data.slowAmount, data.slowDuration);
-            }
+                GetOrAddStatusEffect(health).ApplySlow(data.slowAmount, data.slowDuration);
         }
 
         // Spawn ground rift
@@ -561,7 +551,6 @@ public class WeaponBase : MonoBehaviour
         float dist = data.dashDistance;
         float speed = dist / dur;
 
-        // Apply damage reduction buff (Sword: 50%)
         if (data.buffDamageReduction > 0f)
         {
             StatusEffect se = player.GetComponent<StatusEffect>();
@@ -665,6 +654,13 @@ public class WeaponBase : MonoBehaviour
     // ============================================================
     // HELPERS
     // ============================================================
+
+    StatusEffect GetOrAddStatusEffect(HealthComponent health)
+    {
+        StatusEffect se = health.GetComponent<StatusEffect>();
+        if (se == null) se = health.gameObject.AddComponent<StatusEffect>();
+        return se;
+    }
 
     Vector3 GetProjectileDirection(float spread)
     {

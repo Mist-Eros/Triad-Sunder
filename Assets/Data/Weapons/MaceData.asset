@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: MaceData
   m_EditorClassIdentifier: 
   weaponName: Mace
+  prefab: {fileID: 8275336798148024784, guid: 4496fffb3902fff43a05edf8269e46ee, type: 3}
   icon: {fileID: 0}
   weaponType: 1
   secondaryAbility: 3

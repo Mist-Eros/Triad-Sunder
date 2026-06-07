@@ -38,19 +38,17 @@ public class MapMenu : MonoBehaviour
 
         var unlocked = GameManager.Instance.GetUnlockedLevels();
         if (unlocked == null || unlocked.Count == 0)
-            unlocked = new List<int> { 2 }; // First level is at build index 2 (Bootstrap=0, MainMenu=1)
+            unlocked = new List<int> { 1 };
 
         int levelCount = SceneManager.sceneCountInBuildSettings;
 
-        // Start from build index 2 to skip Bootstrap (0) and MainMenu (1)
-        for (int i = 2; i < levelCount; i++)
+        for (int i = 1; i < levelCount; i++)
         {
             string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
             if (string.IsNullOrEmpty(scenePath)) continue;
 
             // Skip non-level scenes
             string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
-            if (sceneName.Contains("Bootstrap") || sceneName.Contains("MainMenu")) continue;
             int buildIndex = i;
 
             GameObject entry = Instantiate(levelButtonPrefab, contentContainer);
@@ -62,7 +60,7 @@ public class MapMenu : MonoBehaviour
                 label.text = sceneName;
 
             var img = entry.GetComponent<Image>();
-            bool isUnlocked = unlocked.Contains(buildIndex) || buildIndex == 2;
+            bool isUnlocked = unlocked.Contains(buildIndex);
 
             if (entry.TryGetComponent<Button>(out var btn))
             {

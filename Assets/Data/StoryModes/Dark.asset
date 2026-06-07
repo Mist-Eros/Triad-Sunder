@@ -9,14 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a6267bc5526f18e40b28f81d50b08d7e, type: 3}
-  m_Name: DaggerEnemyData
+  m_Script: {fileID: 11500000, guid: 82ff1f2e88d60f04da020ecfcccd960b, type: 3}
+  m_Name: Dark
   m_EditorClassIdentifier: 
-  weaponName: DaggerEnemy
+  mode: 1
+  displayName: Dark
   icon: {fileID: 0}
-  damage: 12
-  attackCooldown: 0.2
-  attackDuration: 0.15
-  attackRange: 1.2
-  knockbackForce: 2
-  swingAngle: 40
+  description: 
+  defaultWeapons:
+  - Axe
+  - Hammer
+  maxHealth: 100
+  damageMultiplier: 1
+  attackSpeedMultiplier: 1
+  moveSpeedMultiplier: 1
+  maxStaminaPills: 3
+  staminaRegenTime: 2

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: DualCrossbowData
   m_EditorClassIdentifier: 
   weaponName: DualCrossbows
+  prefab: {fileID: 1601751923321177708, guid: 1fc16684518a44f4db2b5e93e323f5c2, type: 3}
   icon: {fileID: 0}
   weaponType: 4
   secondaryAbility: 7

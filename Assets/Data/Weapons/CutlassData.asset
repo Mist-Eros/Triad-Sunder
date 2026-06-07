@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: CutlassData
   m_EditorClassIdentifier: 
   weaponName: Cutlass
+  prefab: {fileID: 5414800056461729096, guid: 3e91fa5f503181c4292498f7c942fdc6, type: 3}
   icon: {fileID: 0}
   weaponType: 0
   secondaryAbility: 9

@@ -65,6 +65,7 @@ public class MainMenuHandler : MonoBehaviour
 
     void StartGame()
     {
+        if (GameManager.Instance.GetEquippedWeaponData(0) == null || GameManager.Instance.GetEquippedWeaponData(1) == null) return;
         // Use level selected in MapMenu, fallback to first unlocked
         int buildIndex = -1;
 
@@ -74,16 +75,16 @@ public class MainMenuHandler : MonoBehaviour
         }
 
         // Reject invalid indices (0 = Bootstrap, 1 = MainMenu)
-        if (buildIndex < 2 && GameManager.Instance != null)
+        if (buildIndex < 1 && GameManager.Instance != null)
         {
             var unlocked = GameManager.Instance.GetUnlockedLevels();
             if (unlocked.Count > 0)
                 buildIndex = unlocked[0];
             else
-                buildIndex = 2; // Default first level
+                buildIndex = 1; // Default first level
         }
 
-        if (buildIndex >= 2)
+        if (buildIndex >= 1)
         {
             Debug.Log($"[MainMenuHandler] Starting game at build index {buildIndex}");
             SceneManager.LoadScene(buildIndex);
@@ -91,8 +92,8 @@ public class MainMenuHandler : MonoBehaviour
         }
 
         // Fallback — should not happen after migration
-        Debug.LogWarning("[MainMenuHandler] No valid level found, loading scene 2");
-        SceneManager.LoadScene(2);
+        Debug.LogWarning("[MainMenuHandler] No valid level found, loading scene 1");
+        SceneManager.LoadScene(1);
     }
 
     void ShowOnly(GameObject activePanel)

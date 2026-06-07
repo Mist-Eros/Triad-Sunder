@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: HammerData
   m_EditorClassIdentifier: 
   weaponName: Hammer
+  prefab: {fileID: 3313495141595945441, guid: f4728ed6a7ddf714ba93e554e0f59141, type: 3}
   icon: {fileID: 0}
   weaponType: 1
   secondaryAbility: 2
